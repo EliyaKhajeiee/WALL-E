@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+wall-e-env/
+Scripts/
+Lib/
+Include/
+pyvenv.cfg
+
+# Vector database (too large for git)
+vector_db/
+
+# Sync state (generated locally)
+sync_state.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
