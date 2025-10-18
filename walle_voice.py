@@ -210,9 +210,9 @@ def listen_for_wake_word():
 
 
 def listen_for_command():
-    """Listen for user command after wake word."""
+    """Listen for user command after button press."""
     print("[LISTENING] Listening for your question...")
-    speak("Beep boop! How can I help?")
+    speak("Beep boop!")
 
     try:
         # Record 5 seconds for question
@@ -324,61 +324,26 @@ def summarize_conversation():
 
 
 def main():
-    """Main voice assistant loop with button toggle."""
+    """Main voice assistant loop with button press-to-talk."""
     speak("Beep boop! Hi, I'm WALL-E!")
 
     if GPIO_AVAILABLE:
-        speak("Press the button to toggle listening mode!")
-        listening_enabled = False  # Start in OFF mode
+        speak("Press the button to talk to me!")
+        print("\n[READY] Press button to ask a question - no wake word needed!")
 
         while True:
             try:
-                # Wait for button press to toggle
-                print(f"\n[MODE] Listening is {'ON' if listening_enabled else 'OFF'}")
-                if not listening_enabled:
-                    print("[BUTTON] Press button to START listening for wake word...")
-                else:
-                    print("[BUTTON] Press button to STOP listening, or say wake word...")
+                # Wait for button press
+                if wait_for_button_press():
+                    # Get command immediately - no wake word needed!
+                    command = listen_for_command()
 
-                # Check button with timeout so we can still listen if enabled
-                button_pressed = False
-                if not listening_enabled:
-                    # Wait indefinitely for button when disabled
-                    button_pressed = wait_for_button_press()
-                else:
-                    # Check button non-blocking when enabled
-                    try:
-                        if GPIO_METHOD == 'gpiozero':
-                            # gpiozero: check if button is currently pressed
-                            button_pressed = button.is_pressed
-                        else:
-                            # RPi.GPIO: wait with timeout
-                            GPIO.wait_for_edge(BUTTON_PIN, GPIO.FALLING, timeout=100)
-                            button_pressed = True
-                    except:
-                        button_pressed = False
+                    if command:
+                        # Process and respond
+                        response = query_walle(command)
+                        speak(response)
 
-                # Toggle mode if button pressed
-                if button_pressed:
-                    listening_enabled = not listening_enabled
-                    if listening_enabled:
-                        speak("Listening mode ON! Say 'Hi WALL-E' to talk!")
-                        print("[LISTENING] Now listening for wake word...")
-                    else:
-                        speak("Listening mode OFF!")
-                        print("[STOPPED] No longer listening.")
-                    continue
-
-                # If listening enabled, check for wake word
-                if listening_enabled:
-                    if listen_for_wake_word():
-                        # Get command
-                        command = listen_for_command()
-
-                        if command:
-                            # Process and respond
-                            response = query_walle(command)
-                            speak(response)
+                    print("\n[READY] Press button to ask another question!")
 
             except KeyboardInterrupt:
                 print("\n[SHUTDOWN] Goodbye!")
