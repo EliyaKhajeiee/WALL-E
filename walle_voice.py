@@ -13,7 +13,7 @@ from datetime import datetime
 
 # Speech libraries
 import speech_recognition as sr
-import pyttsx3
+import subprocess
 
 # RAG components
 from langchain_community.llms import Ollama
@@ -48,26 +48,6 @@ vectordb = Chroma(
 recognizer = sr.Recognizer()
 microphone = sr.Microphone()
 
-# Initialize TTS with espeak backend for Raspberry Pi
-try:
-    tts_engine = pyttsx3.init(driverName='espeak')
-    # Set TTS properties
-    tts_engine.setProperty('rate', 150)  # Speed
-    tts_engine.setProperty('volume', 0.9)  # Volume
-    # Use a simple English voice
-    voices = tts_engine.getProperty('voices')
-    if voices:
-        # Try to find an English voice
-        for voice in voices:
-            if 'en' in voice.id.lower():
-                tts_engine.setProperty('voice', voice.id)
-                break
-except Exception as e:
-    print(f"[WARNING] TTS initialization issue: {e}")
-    print("[INFO] Trying alternative TTS setup...")
-    tts_engine = pyttsx3.init(driverName='espeak')
-    tts_engine.setProperty('rate', 150)
-
 # Conversation history
 conversation_history = []
 SUMMARIZE_AFTER_TURNS = 8
@@ -76,10 +56,15 @@ print("[OK] WALL-E voice assistant ready!\n")
 
 
 def speak(text):
-    """Convert text to speech."""
+    """Convert text to speech using espeak directly."""
     print(f"WALL-E: {text}")
-    tts_engine.say(text)
-    tts_engine.runAndWait()
+    try:
+        # Use espeak directly (simpler and more reliable on Pi)
+        subprocess.run(['espeak', '-s', '150', '-a', '200', text],
+                      stderr=subprocess.DEVNULL,
+                      stdout=subprocess.DEVNULL)
+    except Exception as e:
+        print(f"[WARNING] Speech output failed: {e}")
 
 
 def listen_for_wake_word():
