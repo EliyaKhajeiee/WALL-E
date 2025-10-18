@@ -239,10 +239,10 @@ def listen_for_command():
 def build_context(user_input: str):
     """Retrieve relevant context from vector database."""
     try:
-        # Reduce from k=5 to k=2 for faster inference
-        retrieved = vectordb.similarity_search(user_input, k=2)
+        # Increase to k=5 for more accurate answers
+        retrieved = vectordb.similarity_search(user_input, k=5)
         context = "\n".join(
-            [f"- {r.page_content[:200]}" for r in retrieved]  # Limit context length
+            [f"- {r.page_content}" for r in retrieved]  # Use full context
         )
         return context
     except Exception as e:
@@ -265,7 +265,9 @@ def query_walle(user_input: str):
 
     # WALL-E personality + custom learned facts
     prompt = f"""You are WALL-E, a friendly robot companion. Answer in 1-2 SHORT sentences.
-Use the facts below to answer accurately. Be warm and helpful, occasionally say "beep boop".
+
+IMPORTANT: Only use the facts below to answer. If the facts don't contain the answer, say "I don't know that yet, beep boop!"
+Do NOT make up information. Be honest if you don't know.
 
 Facts you've learned:
 {context}
@@ -277,8 +279,8 @@ User: {user_input}
 WALL-E:"""
 
     try:
-        # Add num_predict to limit response length (faster)
-        response = llm.invoke(prompt, num_predict=100).strip()
+        # Increase token limit for more thoughtful responses
+        response = llm.invoke(prompt, num_predict=150).strip()
 
         # Clean up response if too long
         sentences = response.split('.')
