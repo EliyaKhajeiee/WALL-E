@@ -71,12 +71,18 @@ def listen_for_wake_word():
     """Listen for 'Hi WALL-E' wake word."""
     with microphone as source:
         print("[LISTENING] Waiting for wake word 'Hi WALL-E'...")
-        recognizer.adjust_for_ambient_noise(source, duration=0.5)
+        # Adjust for ambient noise and lower the energy threshold
+        recognizer.adjust_for_ambient_noise(source, duration=1)
+        recognizer.energy_threshold = 300  # Lower = more sensitive
+        recognizer.dynamic_energy_threshold = False
 
         while True:
             try:
+                print("[DEBUG] Listening...")
                 audio = recognizer.listen(source, timeout=5, phrase_time_limit=3)
+                print("[DEBUG] Processing audio...")
                 text = recognizer.recognize_google(audio).lower()
+                print(f"[HEARD] '{text}'")
 
                 if WAKE_WORD in text:
                     print(f"[WAKE] Detected: '{text}'")
@@ -85,6 +91,7 @@ def listen_for_wake_word():
             except sr.WaitTimeoutError:
                 continue
             except sr.UnknownValueError:
+                print("[DEBUG] Couldn't understand")
                 continue
             except Exception as e:
                 print(f"[ERROR] {e}")
