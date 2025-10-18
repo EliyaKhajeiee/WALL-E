@@ -346,20 +346,18 @@ def main():
                     GPIO.cleanup()
                 return
 
-        # Now just use button press-to-talk (no more wake words)
+        # Now just listen continuously (no more wake words needed)
         while True:
             try:
-                # Wait for button press
-                if wait_for_button_press():
-                    # Get command immediately - no wake word needed!
-                    command = listen_for_command()
+                # Listen for command directly
+                command = listen_for_command()
 
-                    if command:
-                        # Process and respond
-                        response = query_walle(command)
-                        speak(response)
+                if command:
+                    # Process and respond
+                    response = query_walle(command)
+                    speak(response)
 
-                    print("\n[READY] Press button to ask another question!")
+                print("\n[READY] Listening for your next question...")
 
             except KeyboardInterrupt:
                 print("\n[SHUTDOWN] Goodbye!")
