@@ -282,9 +282,10 @@ WALL-E:"""
 
         conversation_history.append({"user": user_input, "ai": response})
 
-        # Disable auto-summarization for speed
-        # if len(conversation_history) >= SUMMARIZE_AFTER_TURNS:
-        #     summarize_conversation()
+        # Re-enable auto-summarization for learning
+        if len(conversation_history) >= SUMMARIZE_AFTER_TURNS:
+            print("[MEMORY] Saving conversation to long-term memory...")
+            summarize_conversation()
 
         return response
 
