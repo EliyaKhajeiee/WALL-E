@@ -34,7 +34,7 @@ VECTOR_DB_DIR = BASE_DIR / "vector_db"
 SYNC_FILE = BASE_DIR / "sync_state.json"
 MODEL_NAME = "llama3"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-WAKE_WORDS = ["hi walle", "hey walle", "hi wally", "hey wally", "hello walle", "hello wally"]
+WAKE_WORDS = ["wally", "walle", "hi wally", "hey wally", "hi walle", "hey walle"]
 
 # Initialize components
 print("[INIT] Starting WALL-E voice assistant...")
