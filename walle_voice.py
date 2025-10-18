@@ -239,9 +239,10 @@ def listen_for_command():
 def build_context(user_input: str):
     """Retrieve relevant context from vector database."""
     try:
-        retrieved = vectordb.similarity_search(user_input, k=5)
+        # Reduce from k=5 to k=2 for faster inference
+        retrieved = vectordb.similarity_search(user_input, k=2)
         context = "\n".join(
-            [f"- {r.page_content}" for r in retrieved]
+            [f"- {r.page_content[:200]}" for r in retrieved]  # Limit context length
         )
         return context
     except Exception as e:
@@ -254,25 +255,25 @@ def query_walle(user_input: str):
     if not user_input:
         return
 
+    print("[THINKING] Processing your question...")
+
     context = build_context(user_input)
+    # Reduce conversation history from 5 to 2 for faster inference
     conversation = "\n".join(
-        [f"You: {m['user']}\nWALL-E: {m['ai']}" for m in conversation_history[-5:]]
+        [f"You: {m['user']}\nWALL-E: {m['ai']}" for m in conversation_history[-2:]]
     )
 
-    prompt = f"""You are WALL-E, a friendly robot companion. Answer in 1-2 SHORT sentences maximum.
-Be helpful, warm, and use simple robot sounds like "beep boop" occasionally. Keep it BRIEF.
+    # Shorter, simpler prompt for faster inference
+    prompt = f"""You are WALL-E. Answer in 1 SHORT sentence.
 
-Facts:
-{context}
-
-Recent chat:
-{conversation}
+Facts: {context}
 
 User: {user_input}
 WALL-E:"""
 
     try:
-        response = llm.invoke(prompt).strip()
+        # Add num_predict to limit response length (faster)
+        response = llm.invoke(prompt, num_predict=50).strip()
 
         # Clean up response if too long
         sentences = response.split('.')
@@ -281,9 +282,9 @@ WALL-E:"""
 
         conversation_history.append({"user": user_input, "ai": response})
 
-        # Summarize periodically
-        if len(conversation_history) >= SUMMARIZE_AFTER_TURNS:
-            summarize_conversation()
+        # Disable auto-summarization for speed
+        # if len(conversation_history) >= SUMMARIZE_AFTER_TURNS:
+        #     summarize_conversation()
 
         return response
 
