@@ -159,6 +159,9 @@ def main():
     # Get JSON file
     if len(sys.argv) > 1:
         json_path = Path(sys.argv[1])
+        # Make it absolute if it's relative
+        if not json_path.is_absolute():
+            json_path = BASE_DIR / json_path
     else:
         json_path = BASE_DIR / "personal_facts.json"
 
