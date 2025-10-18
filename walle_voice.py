@@ -70,15 +70,28 @@ print("[OK] WALL-E voice assistant ready!\n")
 
 
 def speak(text):
-    """Convert text to speech using espeak directly."""
+    """Convert text to speech - tries Piper first, falls back to espeak."""
     print(f"WALL-E: {text}")
     try:
-        # Use espeak directly (simpler and more reliable on Pi)
+        # Try Piper first (better quality, still offline)
+        result = subprocess.run(
+            ['piper', '--model', 'en_US-lessac-medium', '--output-raw'],
+            input=text.encode('utf-8'),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL
+        )
+        if result.returncode == 0:
+            # Play through aplay
+            subprocess.run(['aplay', '-r', '22050', '-f', 'S16_LE', '-c', '1'],
+                         input=result.stdout,
+                         stderr=subprocess.DEVNULL)
+        else:
+            raise Exception("Piper failed")
+    except:
+        # Fallback to espeak (always works, offline)
         subprocess.run(['espeak', '-s', '150', '-a', '200', text],
                       stderr=subprocess.DEVNULL,
                       stdout=subprocess.DEVNULL)
-    except Exception as e:
-        print(f"[WARNING] Speech output failed: {e}")
 
 
 def record_audio(duration=3):
