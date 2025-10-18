@@ -263,13 +263,17 @@ def query_walle(user_input: str):
         [f"You: {m['user']}\nWALL-E: {m['ai']}" for m in conversation_history[-2:]]
     )
 
-    # Shorter, simpler prompt for faster inference
-    prompt = f"""You are WALL-E. Answer in 1 SHORT sentence.
+    # Simple prompt - just answer based on facts
+    prompt = f"""Answer the question in 1-2 SHORT sentences using the facts below.
 
-Facts: {context}
+Facts:
+{context}
 
-User: {user_input}
-WALL-E:"""
+Recent conversation:
+{conversation}
+
+Question: {user_input}
+Answer:"""
 
     try:
         # Add num_predict to limit response length (faster)
@@ -371,22 +375,34 @@ def main():
                 continue
 
     else:
-        # Fallback to always-listening mode if no GPIO
-        speak("Say 'Hi WALL-E' to talk to me!")
+        # Fallback mode (no GPIO) - wake word once, then continuous listening
+        speak("Say 'Hi WALL-E' to wake me up!")
+        print("\n[SLEEPING] Waiting for wake word 'Hi WALL-E' to activate...")
 
+        activated = False
+        while not activated:
+            try:
+                if listen_for_wake_word():
+                    activated = True
+                    speak("I'm listening!")
+                    print("\n[READY] Listening for your questions...")
+            except KeyboardInterrupt:
+                print("\n[SHUTDOWN] Goodbye!")
+                speak("Beep boop! Goodbye!")
+                return
+
+        # Now continuously listen (no more wake words)
         while True:
             try:
-                # Wait for wake word
-                if listen_for_wake_word():
-                    # Get command
-                    command = listen_for_command()
+                # Listen for command directly
+                command = listen_for_command()
 
-                    if command:
-                        # Process and respond
-                        response = query_walle(command)
-                        speak(response)
+                if command:
+                    # Process and respond
+                    response = query_walle(command)
+                    speak(response)
 
-                    print("\n[LISTENING] Waiting for wake word...\n")
+                print("\n[READY] Listening for your next question...")
 
             except KeyboardInterrupt:
                 print("\n[SHUTDOWN] Goodbye!")
