@@ -149,6 +149,40 @@ def wait_for_button_press():
         return False
 
 
+def listen_for_wake_word():
+    """Listen for wake word with better noise filtering."""
+    try:
+        # Record short audio snippet
+        audio_data = record_audio(duration=2)
+
+        # Calculate volume to filter out silence
+        volume = np.abs(audio_data).mean()
+        if volume < 0.01:  # Too quiet, skip
+            return False
+
+        # Transcribe
+        result = whisper_model.transcribe(audio_data, language='en',
+                                         fp16=False, task='transcribe')
+        text = result['text'].strip().lower()
+
+        if text:
+            print(f"[HEARD] '{text}'")
+
+        # Check for wake words - more flexible matching
+        wake_words = ['wall-e', 'walle', 'wally', 'walley', 'hi wall']
+        for wake_word in wake_words:
+            if wake_word in text:
+                print(f"[WAKE] Wake word detected!")
+                speak("Yes?")
+                return True
+
+        return False
+
+    except Exception as e:
+        print(f"[ERROR] Listen error: {e}")
+        return False
+
+
 def listen_for_command():
     """Listen for user command after wake word."""
     print("[LISTENING] Listening for your question...")
@@ -263,30 +297,92 @@ def summarize_conversation():
 
 
 def main():
-    """Main voice assistant loop."""
-    speak("Beep boop! Hi, I'm WALL-E! Say 'Hi WALL-E' to talk to me!")
+    """Main voice assistant loop with button toggle."""
+    speak("Beep boop! Hi, I'm WALL-E!")
 
-    while True:
-        try:
-            # Wait for wake word
-            if listen_for_wake_word():
-                # Get command
-                command = listen_for_command()
+    if GPIO_AVAILABLE:
+        speak("Press the button to toggle listening mode!")
+        listening_enabled = False  # Start in OFF mode
 
-                if command:
-                    # Process and respond
-                    response = query_walle(command)
-                    speak(response)
+        while True:
+            try:
+                # Wait for button press to toggle
+                print(f"\n[MODE] Listening is {'ON' if listening_enabled else 'OFF'}")
+                if not listening_enabled:
+                    print("[BUTTON] Press button to START listening for wake word...")
+                else:
+                    print("[BUTTON] Press button to STOP listening, or say wake word...")
 
-                print("\n[LISTENING] Waiting for wake word 'Hi WALL-E'...\n")
+                # Check button with timeout so we can still listen if enabled
+                button_pressed = False
+                if not listening_enabled:
+                    # Wait indefinitely for button when disabled
+                    button_pressed = wait_for_button_press()
+                else:
+                    # Check button non-blocking when enabled
+                    try:
+                        GPIO.wait_for_edge(BUTTON_PIN, GPIO.FALLING, timeout=100)
+                        button_pressed = True
+                    except:
+                        button_pressed = False
 
-        except KeyboardInterrupt:
-            print("\n[SHUTDOWN] Goodbye!")
-            speak("Beep boop! Goodbye!")
-            break
-        except Exception as e:
-            print(f"[ERROR] {e}")
-            continue
+                # Toggle mode if button pressed
+                if button_pressed:
+                    listening_enabled = not listening_enabled
+                    if listening_enabled:
+                        speak("Listening mode ON! Say 'Hi WALL-E' to talk!")
+                        print("[LISTENING] Now listening for wake word...")
+                    else:
+                        speak("Listening mode OFF!")
+                        print("[STOPPED] No longer listening.")
+                    continue
+
+                # If listening enabled, check for wake word
+                if listening_enabled:
+                    if listen_for_wake_word():
+                        # Get command
+                        command = listen_for_command()
+
+                        if command:
+                            # Process and respond
+                            response = query_walle(command)
+                            speak(response)
+
+            except KeyboardInterrupt:
+                print("\n[SHUTDOWN] Goodbye!")
+                speak("Beep boop! Goodbye!")
+                if GPIO_AVAILABLE:
+                    GPIO.cleanup()
+                break
+            except Exception as e:
+                print(f"[ERROR] {e}")
+                continue
+
+    else:
+        # Fallback to always-listening mode if no GPIO
+        speak("Say 'Hi WALL-E' to talk to me!")
+
+        while True:
+            try:
+                # Wait for wake word
+                if listen_for_wake_word():
+                    # Get command
+                    command = listen_for_command()
+
+                    if command:
+                        # Process and respond
+                        response = query_walle(command)
+                        speak(response)
+
+                    print("\n[LISTENING] Waiting for wake word...\n")
+
+            except KeyboardInterrupt:
+                print("\n[SHUTDOWN] Goodbye!")
+                speak("Beep boop! Goodbye!")
+                break
+            except Exception as e:
+                print(f"[ERROR] {e}")
+                continue
 
 
 if __name__ == "__main__":
