@@ -263,17 +263,18 @@ def query_walle(user_input: str):
         [f"You: {m['user']}\nWALL-E: {m['ai']}" for m in conversation_history[-2:]]
     )
 
-    # Simple prompt - just answer based on facts
-    prompt = f"""Answer the question in 1-2 SHORT sentences using the facts below.
+    # WALL-E personality + custom learned facts
+    prompt = f"""You are WALL-E, a friendly robot companion. Answer in 1-2 SHORT sentences.
+Use the facts below to answer accurately. Be warm and helpful, occasionally say "beep boop".
 
-Facts:
+Facts you've learned:
 {context}
 
 Recent conversation:
 {conversation}
 
-Question: {user_input}
-Answer:"""
+User: {user_input}
+WALL-E:"""
 
     try:
         # Add num_predict to limit response length (faster)
