@@ -47,11 +47,26 @@ vectordb = Chroma(
 # Speech components
 recognizer = sr.Recognizer()
 microphone = sr.Microphone()
-tts_engine = pyttsx3.init()
 
-# Set TTS properties
-tts_engine.setProperty('rate', 150)  # Speed
-tts_engine.setProperty('volume', 0.9)  # Volume
+# Initialize TTS with espeak backend for Raspberry Pi
+try:
+    tts_engine = pyttsx3.init(driverName='espeak')
+    # Set TTS properties
+    tts_engine.setProperty('rate', 150)  # Speed
+    tts_engine.setProperty('volume', 0.9)  # Volume
+    # Use a simple English voice
+    voices = tts_engine.getProperty('voices')
+    if voices:
+        # Try to find an English voice
+        for voice in voices:
+            if 'en' in voice.id.lower():
+                tts_engine.setProperty('voice', voice.id)
+                break
+except Exception as e:
+    print(f"[WARNING] TTS initialization issue: {e}")
+    print("[INFO] Trying alternative TTS setup...")
+    tts_engine = pyttsx3.init(driverName='espeak')
+    tts_engine.setProperty('rate', 150)
 
 # Conversation history
 conversation_history = []
