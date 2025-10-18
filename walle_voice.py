@@ -16,6 +16,12 @@ import subprocess
 import pyaudio
 import wave
 import numpy as np
+try:
+    import RPi.GPIO as GPIO
+    GPIO_AVAILABLE = True
+except ImportError:
+    GPIO_AVAILABLE = False
+    print("[WARNING] RPi.GPIO not available - button mode disabled")
 
 # RAG components
 from langchain_community.llms import Ollama
@@ -34,7 +40,9 @@ VECTOR_DB_DIR = BASE_DIR / "vector_db"
 SYNC_FILE = BASE_DIR / "sync_state.json"
 MODEL_NAME = "llama3.2:1b"  # Smaller model for Raspberry Pi
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-WAKE_WORDS = ["wally", "walle", "hi wally", "hey wally", "hi walle", "hey walle"]
+
+# GPIO Button Configuration (change pin number to match your setup)
+BUTTON_PIN = 17  # GPIO pin for the button (BCM numbering)
 
 # Initialize components
 print("[INIT] Starting WALL-E voice assistant...")
@@ -61,6 +69,12 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
 audio_interface = pyaudio.PyAudio()
+
+# Setup GPIO button if available
+if GPIO_AVAILABLE:
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    print(f"[OK] Button on GPIO pin {BUTTON_PIN} ready!")
 
 # Conversation history
 conversation_history = []
@@ -115,34 +129,24 @@ def record_audio(duration=3):
     return audio_data
 
 
-def listen_for_wake_word():
-    """Listen for 'Hi WALL-E' wake word using Whisper."""
-    print("[LISTENING] Waiting for wake word (say: 'Hi WALL-E')...")
+def wait_for_button_press():
+    """Wait for button press on GPIO pin."""
+    if not GPIO_AVAILABLE:
+        print("[ERROR] GPIO not available!")
+        return False
 
-    while True:
-        try:
-            # Record 2 seconds of audio
-            audio_data = record_audio(duration=2)
+    print("[BUTTON] Press button to talk to WALL-E...")
 
-            # Transcribe with Whisper
-            result = whisper_model.transcribe(audio_data, language='en',
-                                             fp16=False, task='transcribe')
-            text = result['text'].strip().lower()
-
-            if text:
-                print(f"[HEARD] '{text}'")
-
-                # Check if any wake word variant is in the text
-                for wake_word in WAKE_WORDS:
-                    if wake_word in text:
-                        print(f"[WAKE] Detected: '{wake_word}'!")
-                        return True
-
-        except KeyboardInterrupt:
-            raise
-        except Exception as e:
-            print(f"[ERROR] {e}")
-            continue
+    try:
+        # Wait for button press (falling edge = button pressed)
+        GPIO.wait_for_edge(BUTTON_PIN, GPIO.FALLING)
+        print("[BUTTON] Button pressed! Listening...")
+        return True
+    except KeyboardInterrupt:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Button error: {e}")
+        return False
 
 
 def listen_for_command():
