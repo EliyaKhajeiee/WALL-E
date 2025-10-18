@@ -34,7 +34,7 @@ VECTOR_DB_DIR = BASE_DIR / "vector_db"
 SYNC_FILE = BASE_DIR / "sync_state.json"
 MODEL_NAME = "llama3"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-WAKE_WORD = "hi walle"
+WAKE_WORDS = ["hi walle", "hey walle", "hi wally", "hey wally", "hello walle", "hello wally"]
 
 # Initialize components
 print("[INIT] Starting WALL-E voice assistant...")
@@ -117,7 +117,7 @@ def record_audio(duration=3):
 
 def listen_for_wake_word():
     """Listen for 'Hi WALL-E' wake word using Whisper."""
-    print("[LISTENING] Waiting for wake word 'Hi WALL-E'...")
+    print("[LISTENING] Waiting for wake word (say: 'Hi WALL-E')...")
 
     while True:
         try:
@@ -132,9 +132,11 @@ def listen_for_wake_word():
             if text:
                 print(f"[HEARD] '{text}'")
 
-                if WAKE_WORD in text:
-                    print(f"[WAKE] Detected!")
-                    return True
+                # Check if any wake word variant is in the text
+                for wake_word in WAKE_WORDS:
+                    if wake_word in text:
+                        print(f"[WAKE] Detected: '{wake_word}'!")
+                        return True
 
         except KeyboardInterrupt:
             raise
