@@ -273,7 +273,7 @@ WALL-E:"""
 
     try:
         # Add num_predict to limit response length (faster)
-        response = llm.invoke(prompt, num_predict=50).strip()
+        response = llm.invoke(prompt, num_predict=100).strip()
 
         # Clean up response if too long
         sentences = response.split('.')
