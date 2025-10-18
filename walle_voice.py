@@ -12,8 +12,10 @@ from pathlib import Path
 from datetime import datetime
 
 # Speech libraries
-import speech_recognition as sr
 import subprocess
+import pyaudio
+import wave
+import numpy as np
 
 # RAG components
 from langchain_community.llms import Ollama
@@ -45,8 +47,20 @@ vectordb = Chroma(
 )
 
 # Speech components
-recognizer = sr.Recognizer()
-microphone = sr.Microphone()
+try:
+    import whisper
+    whisper_model = whisper.load_model("tiny")  # Tiny model = ~75MB, fast
+    print("[OK] Whisper loaded (offline mode)")
+except ImportError:
+    print("[ERROR] Please install: pip install openai-whisper")
+    sys.exit(1)
+
+# Audio settings
+CHUNK = 1024
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 16000
+audio_interface = pyaudio.PyAudio()
 
 # Conversation history
 conversation_history = []
@@ -67,60 +81,80 @@ def speak(text):
         print(f"[WARNING] Speech output failed: {e}")
 
 
-def listen_for_wake_word():
-    """Listen for 'Hi WALL-E' wake word."""
-    with microphone as source:
-        print("[LISTENING] Waiting for wake word 'Hi WALL-E'...")
-        # Adjust for ambient noise and lower the energy threshold
-        recognizer.adjust_for_ambient_noise(source, duration=1)
-        recognizer.energy_threshold = 300  # Lower = more sensitive
-        recognizer.dynamic_energy_threshold = False
+def record_audio(duration=3):
+    """Record audio and return as numpy array."""
+    stream = audio_interface.open(format=FORMAT, channels=CHANNELS,
+                                   rate=RATE, input=True,
+                                   frames_per_buffer=CHUNK)
 
-        while True:
-            try:
-                print("[DEBUG] Listening...")
-                audio = recognizer.listen(source, timeout=5, phrase_time_limit=3)
-                print("[DEBUG] Processing audio...")
-                text = recognizer.recognize_google(audio).lower()
+    frames = []
+    for _ in range(0, int(RATE / CHUNK * duration)):
+        data = stream.read(CHUNK, exception_on_overflow=False)
+        frames.append(data)
+
+    stream.stop_stream()
+    stream.close()
+
+    # Convert to numpy array
+    audio_data = np.frombuffer(b''.join(frames), dtype=np.int16)
+    audio_data = audio_data.astype(np.float32) / 32768.0  # Normalize
+
+    return audio_data
+
+
+def listen_for_wake_word():
+    """Listen for 'Hi WALL-E' wake word using Whisper."""
+    print("[LISTENING] Waiting for wake word 'Hi WALL-E'...")
+
+    while True:
+        try:
+            # Record 2 seconds of audio
+            audio_data = record_audio(duration=2)
+
+            # Transcribe with Whisper
+            result = whisper_model.transcribe(audio_data, language='en',
+                                             fp16=False, task='transcribe')
+            text = result['text'].strip().lower()
+
+            if text:
                 print(f"[HEARD] '{text}'")
 
                 if WAKE_WORD in text:
-                    print(f"[WAKE] Detected: '{text}'")
+                    print(f"[WAKE] Detected!")
                     return True
 
-            except sr.WaitTimeoutError:
-                continue
-            except sr.UnknownValueError:
-                print("[DEBUG] Couldn't understand")
-                continue
-            except Exception as e:
-                print(f"[ERROR] {e}")
-                continue
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            print(f"[ERROR] {e}")
+            continue
 
 
 def listen_for_command():
     """Listen for user command after wake word."""
-    with microphone as source:
-        print("[LISTENING] Listening for your question...")
-        speak("Beep boop! How can I help?")
+    print("[LISTENING] Listening for your question...")
+    speak("Beep boop! How can I help?")
 
-        recognizer.adjust_for_ambient_noise(source, duration=0.5)
+    try:
+        # Record 5 seconds for question
+        audio_data = record_audio(duration=5)
 
-        try:
-            audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
-            text = recognizer.recognize_google(audio)
+        # Transcribe
+        result = whisper_model.transcribe(audio_data, language='en',
+                                         fp16=False, task='transcribe')
+        text = result['text'].strip()
+
+        if text:
             print(f"You: {text}")
             return text
-        except sr.WaitTimeoutError:
+        else:
             speak("I didn't hear anything. Beep boop.")
             return None
-        except sr.UnknownValueError:
-            speak("Sorry, I couldn't understand that.")
-            return None
-        except Exception as e:
-            print(f"[ERROR] {e}")
-            speak("Sorry, I had trouble hearing you.")
-            return None
+
+    except Exception as e:
+        print(f"[ERROR] {e}")
+        speak("Sorry, I had trouble hearing you.")
+        return None
 
 
 def build_context(user_input: str):
