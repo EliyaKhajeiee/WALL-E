@@ -16,12 +16,21 @@ import subprocess
 import pyaudio
 import wave
 import numpy as np
+
+# Try gpiozero first (newer, better), fallback to RPi.GPIO
 try:
-    import RPi.GPIO as GPIO
+    from gpiozero import Button
     GPIO_AVAILABLE = True
+    GPIO_METHOD = 'gpiozero'
 except ImportError:
-    GPIO_AVAILABLE = False
-    print("[WARNING] RPi.GPIO not available - button mode disabled")
+    try:
+        import RPi.GPIO as GPIO
+        GPIO_AVAILABLE = True
+        GPIO_METHOD = 'RPi.GPIO'
+    except ImportError:
+        GPIO_AVAILABLE = False
+        GPIO_METHOD = None
+        print("[WARNING] No GPIO library available - button mode disabled")
 
 # RAG components
 from langchain_community.llms import Ollama
@@ -41,7 +50,8 @@ SYNC_FILE = BASE_DIR / "sync_state.json"
 MODEL_NAME = "llama3.2:1b"  # Smaller model for Raspberry Pi
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
-# GPIO Button Configuration (change pin number to match your setup)
+# GPIO Button Configuration for Raspberry Pi HAT
+# Common HAT buttons are on GPIO 17, 22, 23, 24, or 27
 BUTTON_PIN = 17  # GPIO pin for the button (BCM numbering)
 
 # Initialize components
@@ -71,10 +81,20 @@ RATE = 16000
 audio_interface = pyaudio.PyAudio()
 
 # Setup GPIO button if available
+button = None
 if GPIO_AVAILABLE:
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    print(f"[OK] Button on GPIO pin {BUTTON_PIN} ready!")
+    try:
+        if GPIO_METHOD == 'gpiozero':
+            button = Button(BUTTON_PIN, pull_up=True, bounce_time=0.1)
+            print(f"[OK] Button on GPIO pin {BUTTON_PIN} ready! (using gpiozero)")
+        else:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            print(f"[OK] Button on GPIO pin {BUTTON_PIN} ready! (using RPi.GPIO)")
+    except Exception as e:
+        print(f"[WARNING] GPIO setup failed: {e}")
+        print("[INFO] Falling back to always-listening mode (no button)")
+        GPIO_AVAILABLE = False
 
 # Conversation history
 conversation_history = []
@@ -135,13 +155,19 @@ def wait_for_button_press():
         print("[ERROR] GPIO not available!")
         return False
 
-    print("[BUTTON] Press button to talk to WALL-E...")
+    print("[BUTTON] Press button to toggle...")
 
     try:
-        # Wait for button press (falling edge = button pressed)
-        GPIO.wait_for_edge(BUTTON_PIN, GPIO.FALLING)
-        print("[BUTTON] Button pressed! Listening...")
-        return True
+        if GPIO_METHOD == 'gpiozero':
+            # gpiozero method
+            button.wait_for_press()
+            print("[BUTTON] Button pressed!")
+            return True
+        else:
+            # RPi.GPIO method
+            GPIO.wait_for_edge(BUTTON_PIN, GPIO.FALLING)
+            print("[BUTTON] Button pressed!")
+            return True
     except KeyboardInterrupt:
         raise
     except Exception as e:
@@ -321,8 +347,13 @@ def main():
                 else:
                     # Check button non-blocking when enabled
                     try:
-                        GPIO.wait_for_edge(BUTTON_PIN, GPIO.FALLING, timeout=100)
-                        button_pressed = True
+                        if GPIO_METHOD == 'gpiozero':
+                            # gpiozero: check if button is currently pressed
+                            button_pressed = button.is_pressed
+                        else:
+                            # RPi.GPIO: wait with timeout
+                            GPIO.wait_for_edge(BUTTON_PIN, GPIO.FALLING, timeout=100)
+                            button_pressed = True
                     except:
                         button_pressed = False
 
@@ -351,7 +382,7 @@ def main():
             except KeyboardInterrupt:
                 print("\n[SHUTDOWN] Goodbye!")
                 speak("Beep boop! Goodbye!")
-                if GPIO_AVAILABLE:
+                if GPIO_AVAILABLE and GPIO_METHOD == 'RPi.GPIO':
                     GPIO.cleanup()
                 break
             except Exception as e:
