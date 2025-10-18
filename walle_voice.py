@@ -324,13 +324,29 @@ def summarize_conversation():
 
 
 def main():
-    """Main voice assistant loop with button press-to-talk."""
+    """Main voice assistant loop with wake word on startup, then button press-to-talk."""
     speak("Beep boop! Hi, I'm WALL-E!")
 
     if GPIO_AVAILABLE:
-        speak("Press the button to talk to me!")
-        print("\n[READY] Press button to ask a question - no wake word needed!")
+        # Wait for initial wake word to activate
+        speak("Say 'Hi WALL-E' to wake me up!")
+        print("\n[SLEEPING] Waiting for wake word 'Hi WALL-E' to activate...")
 
+        activated = False
+        while not activated:
+            try:
+                if listen_for_wake_word():
+                    activated = True
+                    speak("I'm awake! Press the button to talk to me!")
+                    print("\n[READY] Press button to ask a question!")
+            except KeyboardInterrupt:
+                print("\n[SHUTDOWN] Goodbye!")
+                speak("Beep boop! Goodbye!")
+                if GPIO_AVAILABLE and GPIO_METHOD == 'RPi.GPIO':
+                    GPIO.cleanup()
+                return
+
+        # Now just use button press-to-talk (no more wake words)
         while True:
             try:
                 # Wait for button press
