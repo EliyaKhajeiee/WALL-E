@@ -1,0 +1,92 @@
+{
+  "personal_info": {
+    "full_name": "Eliya Khajeie",
+    "nickname": "The King",
+    "birthday": "2002-12-25",
+    "age": 22,
+    "gender": "Male",
+    "birthplace": "Arlington, Texas",
+    "current_residence": "Irvine, California"
+  },
+  "appearance": {
+    "height": "6 ft",
+    "weight": "210 lbs",
+    "hair": "Black hair",
+    "eye_color": "Brown",
+    "clothing_style": "Beaters and Shorts"
+  },
+  "preferences": {
+    "favorite_foods": ["Sushi", "Steak"],
+    "favorite_drinks": ["Water", "Lemon Lime Gatorade", "Sprite", "Coke Zero"],
+    "favorite_movies": ["Wall-E"],
+    "favorite_tv_shows": ["Better Call Saul", "Attack on Titan", "Sword Art Online", "Akame Ga Kill", "Overlord", "Code Geass"],
+    "favorite_books": [],
+    "favorite_music_genres": ["Hardstyle"],
+    "favorite_games": ["League of Legends", "Basketball", "Board Games", "HOE-KM (Persian Card Game)"],
+    "favorite_colors": ["Red"],
+    "favorite_scents": ["Luna car freshener"]
+  },
+  "personality": {
+    "traits": ["Lifting", "Coding", "Basketball"],
+    "strengths": ["Lifting", "Programming"],
+    "weaknesses": ["Overconfidence"],
+    "humor_style": "Ironic jokes",
+    "stress_management": "Avoids stress over uncontrollable things"
+  },
+  "health_fitness": {
+    "bench_press": "Close to 315 lbs",
+    "squat": "Does not squat",
+    "deadlift": "Does not deadlift",
+    "workout_frequency": "5–6 days per week",
+    "diet": "Around 4000 calories per day, healthy eating",
+    "medical_conditions": ["Sprained ankle"],
+    "sleep_hours": "8–9 hours"
+  },
+  "professional_life": {
+    "current_job": "Software Engineer, Founder of GRA",
+    "industry": "Technology",
+    "skills": ["Programming", "Problem Solving", "Building Projects"],
+    "current_projects": ["Wall-E"],
+    "career_goals": ["Own a tech consultancy"],
+    "education": "Master’s in Computer Science (AI specialization)"
+  },
+  "social_relationships": {
+    "partner": "Paneez Jalal",
+    "children": [],
+    "friends": ["Kelan Lohler", "Gayrod (FagasourousRex)", "Luke Backman", "Shahin Soltanian (Doctor Shahin)", "Rod Raz", "Arya (Mr. Capper)"],
+    "family": {
+      "father": "Abraham",
+      "mother": "Farah",
+      "cousin": "Hannah Shabazi"
+    },
+    "pets": [
+      {
+        "name": "Luna",
+        "type": "Miniature Pinscher",
+        "status": "Deceased"
+      }
+    ]
+  },
+  "daily_routine": {
+    "weekday": ["Class", "Lifting", "Class", "Basketball", "Code", "League", "Sleep"],
+    "weekend": ["Lift", "Basketball", "Code", "Hang out with girlfriend’s family", "Cook"],
+    "morning_habits": ["Wake up at 7 AM", "Drink protein shake", "Start work"],
+    "evening_habits": ["Code projects", "Play League of Legends after lifting and basketball"],
+    "work_schedule": "Flexible remote work for GRA"
+  },
+  "goals_aspirations": {
+    "short_term": ["Finish grad school", "Start company or join startup"],
+    "long_term": ["Grow startup", "Expand clientele"],
+    "personal_growth": ["Weigh 220 lbs", "Bench 315 lbs", "Improve basketball and flexibility"],
+    "professional_growth": ["Become a better programmer", "Adapt and solve any technical issue"]
+  },
+  "past_events": {
+    "milestones": ["Born on Christmas", "Persian heritage", "Fluent in Farsi", "Main programming language is Python"],
+    "memorable_experiences": ["Travel to NYC, CA, TX", "Play card games with uncles (Amos)"]
+  },
+  "miscellaneous": {
+    "additional_info": "Group of friends known as 'the Amos'.",
+    "hobbies": ["Lifting", "Basketball", "Coding"],
+    "secrets_or_quirks": []
+  }
+}

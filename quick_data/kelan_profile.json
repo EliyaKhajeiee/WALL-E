@@ -1,0 +1,91 @@
+{
+  "personal_info": {
+    "full_name": "Kelan Lohler",
+    "nickname": "MrGulap",
+    "birthday": "2003-05-15",
+    "age": 22,
+    "gender": "Male",
+    "birthplace": "La Jolla, California",
+    "current_residence": "Dallas, Texas"
+  },
+  "appearance": {
+    "height": "6 ft 0 in",
+    "weight": "160 lbs",
+    "hair": "Brown, side part",
+    "eye_color": "Brown",
+    "clothing_style": "Casual/gymwear"
+  },
+  "preferences": {
+    "favorite_foods": ["Sushi", "Steak", "Pasta", "Donuts", "Shakes"],
+    "favorite_drinks": ["Milk"],
+    "favorite_movies": ["How to Train Your Dragon"],
+    "favorite_tv_shows": ["Attack on Titan", "Code Geass", "Solo Leveling"],
+    "favorite_books": [],
+    "favorite_music_genres": ["Metal", "Rock", "80s", "Hardstyle"],
+    "favorite_artists": ["Metallica", "Alice in Chains", "Michael Jackson", "Imagine Dragons", "Paramore"],
+    "favorite_games": ["Pickleball", "League of Legends", "Clash Royale", "Fortnite", "Minecraft", "Tennis"],
+    "favorite_colors": ["Yellow"]
+  },
+  "personality": {
+    "traits": ["Analytical", "Thoughtful", "Helpful", "Reserved"],
+    "strengths": ["Intelligent", "Data processing"],
+    "weaknesses": ["Social difficulty with strangers", "Self-promotion"],
+    "humor_style": "Witty, dry",
+    "stress_management": "Believes pressure makes diamonds"
+  },
+  "health_fitness": {
+    "bench_press": "225 lbs",
+    "squat": "Does not squat",
+    "deadlift": "Does not deadlift",
+    "workout_frequency": "4 days lifting, 1–2 days other activity per week",
+    "diet": "Whole healthy foods, under 2500 calories per day",
+    "medical_conditions": [],
+    "sleep_hours": "7–7.5 hours"
+  },
+  "professional_life": {
+    "current_job": "Associate Financial Analyst at Lockton Dunning Benefits",
+    "industry": "Health/Insurance",
+    "skills": ["Analytics", "Problem Solving", "Team Collaboration", "Data Processing"],
+    "current_projects": ["Drafting projections", "IBNR calculations", "Automation and project management"],
+    "career_goals": ["Become ASA-certified actuary", "Develop consulting skills"],
+    "certifications": []
+  },
+  "social_relationships": {
+    "partner": "Ashley Farokhrouz",
+    "children": [],
+    "friends": ["Eliya Khajeie"],
+    "family": {
+      "father": "Christiaan Lohler",
+      "mother": "Elga Lohler",
+      "sister": "Raquel Lohler"
+    },
+    "roommate": "Adam Salen",
+    "pets": [
+      {
+        "name": "Ellie",
+        "type": "Dog"
+      }
+    ]
+  },
+  "daily_routine": {
+    "weekday": ["Work 9-5", "Lift", "Study or relax"],
+    "weekend": ["Meal prep", "Lift", "Study", "Work on side projects", "Play video games"],
+    "morning_habits": ["Goes on phone (wants to stop)"],
+    "evening_habits": ["Plays video games"],
+    "work_schedule": "9–5, flexible"
+  },
+  "goals_aspirations": {
+    "short_term": ["Pass 1–2 actuarial exams", "Sign up 5 clients for GRA"],
+    "long_term": ["Become fully certified actuary", "Earn sustainable income from GRA"],
+    "personal_growth": ["Improve physique", "Learn hardstyle production", "Do a handstand"],
+    "professional_growth": ["Actuarial certification", "Develop business consulting experience"]
+  },
+  "past_events": {
+    "milestones": [],
+    "memorable_experiences": []
+  },
+  "miscellaneous": {
+    "hobbies": ["Gaming", "Lifting", "Studying"],
+    "secrets_or_quirks": []
+  }
+}
