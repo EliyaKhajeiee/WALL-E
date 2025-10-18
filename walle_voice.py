@@ -32,7 +32,7 @@ BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "walle_data"
 VECTOR_DB_DIR = BASE_DIR / "vector_db"
 SYNC_FILE = BASE_DIR / "sync_state.json"
-MODEL_NAME = "llama3"
+MODEL_NAME = "llama3.2:1b"  # Smaller model for Raspberry Pi
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 WAKE_WORDS = ["wally", "walle", "hi wally", "hey wally", "hi walle", "hey walle"]
 
