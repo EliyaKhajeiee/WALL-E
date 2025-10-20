@@ -100,6 +100,21 @@ if GPIO_AVAILABLE:
 conversation_history = []
 SUMMARIZE_AFTER_TURNS = 8
 
+# Name corrections for speech recognition errors
+NAME_CORRECTIONS = {
+    # Eliya variations
+    "ilya": "Eliya",
+    "ilia": "Eliya",
+    "elya": "Eliya",
+    "iliya": "Eliya",
+    # Kelan variations
+    "kellin": "Kelan",
+    "kellen": "Kelan",
+    "kellan": "Kelan",
+    "keelan": "Kelan",
+    "keylan": "Kelan",
+}
+
 print("[OK] WALL-E voice assistant ready!\n")
 
 
@@ -224,6 +239,8 @@ def listen_for_command():
         text = result['text'].strip()
 
         if text:
+            # Correct common name mishearings
+            text = correct_names(text)
             print(f"You: {text}")
             return text
         else:
@@ -234,6 +251,22 @@ def listen_for_command():
         print(f"[ERROR] {e}")
         speak("Sorry, I had trouble hearing you.")
         return None
+
+
+def correct_names(text: str) -> str:
+    """Fix common speech recognition errors for names."""
+    words = text.split()
+    corrected = []
+
+    for word in words:
+        # Check lowercase version against corrections
+        word_lower = word.lower().strip('.,!?;:')
+        if word_lower in NAME_CORRECTIONS:
+            corrected.append(NAME_CORRECTIONS[word_lower])
+        else:
+            corrected.append(word)
+
+    return ' '.join(corrected)
 
 
 def build_context(user_input: str):
